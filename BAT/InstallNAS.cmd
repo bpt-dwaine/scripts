@@ -1,0 +1,1 @@
+nassql.exe appservername=RFTEST, nettype=tcp, servername=BPT-NAVDEV6, database=NAV60V1SteveTest, company="Bridgeport Fittings", startupparameter="ADCS ADCSID=NAS1", objectcache=160000, installasservice

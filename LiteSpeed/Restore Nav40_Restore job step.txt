@@ -1,0 +1,13 @@
+exec master.dbo.xp_restore_database @database = N'Nav40_Restore' ,
+@filename = N'F:\RemoteDB\Restore\Nav40_full_1393383600_20140225220000.bak',
+@filenumber = 1,
+@with = N'REPLACE',
+@with = N'STATS = 10',
+@with = N'NORECOVERY',
+@with = N'MOVE N''Navision Demo Database (4-0)_Data'' TO N''E:\Nav40_Restore_1.mdf''',
+@with = N'MOVE N''Navision Demo Database (4-0)_Log'' TO N''D:\Nav40_Restore_log_1.ldf''',
+@affinity = 0,
+@logging = 0
+
+
+GO

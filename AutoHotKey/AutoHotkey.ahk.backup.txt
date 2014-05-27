@@ -1,0 +1,251 @@
+!^+c::
+	SetKeyDelay, 1  ; Smallest possible
+	Send -- Cost Control ----------------------------------------------
+	Send {Enter}
+	Send Tag       Description
+	Send {Enter}
+	Send --------------------------------------------------------------
+	Send {Enter}
+	return
+
+!^+K::
+	SetKeyDelay, 1  ; Smallest possible
+	Send -- KwikTag ---------------------------------------------------
+	Send {Enter}
+	Send No Ver    Dev   Reference       Date       Description
+	Send {Enter}
+	Send --------------------------------------------------------------
+	Send {Enter}
+	return
+
+!^+1::
+	SetKeyDelay, 1  ; Smallest possible
+	Send -- Clients First ---------------------------------------------
+	Send {Enter}
+	Send No. Date     Sign Version     Description 
+	Send {Enter}
+	Send --------------------------------------------------------------
+	Send {Enter}
+	return
+
+!^+a::
+	SetKeyDelay, 1  ; Smallest possible
+	Send -- ArcherPoint -----------------------------------------------
+	Send {Enter}
+	Send Tag     Sig Date      Description 
+	Send {Enter}
+	Send --------------------------------------------------------------
+	Send {Enter}
+	return
+
+!^+b::
+	SetKeyDelay, 1  ; Smallest possible
+	Send -- Bridgeport Fittings ---------------------------------------
+	Send {Enter}
+	Send Tag Date      Sig Reference Description
+	Send {Enter}
+	Send --------------------------------------------------------------
+	Send {Enter}
+	return
+
+^+[::
+	; insert header
+	; Ex. B02 06/19/13  DEK SRX00039  Test if posting date is allowed.
+	InputBox, UserInput, Comment, Please enter a comment.,
+	if ErrorLevel
+	    MsgBox, CANCEL was pressed.
+	else
+		FormatTime, CurrentDate,,MM/dd/yy
+		SetKeyDelay, 1  ; Smallest possible
+		Send ??? %CurrentDate%  DEK SRX00000  %UserInput%
+		
+	return
+^+]::
+	; insert header
+	; Ex. B02 06/19/13  DEK FRX00039  Test if posting date is allowed.
+	InputBox, UserInput, Comment, Please enter a comment.,
+	if ErrorLevel
+	    MsgBox, CANCEL was pressed.
+	else
+		FormatTime, CurrentDate,,MM/dd/yy
+		SetKeyDelay, 1  ; Smallest possible
+		Send ??? %CurrentDate%  DEK FRX00000  %UserInput%
+		
+	return    
+
+^+.::
+	SetKeyDelay, 1  ;
+	Send // ???_%A_YYYY%%A_MM%%A_DD% >>
+	return
+
+^+,::
+	SetKeyDelay, 1  ;
+	Send // ???_%A_YYYY%%A_MM%%A_DD% <<
+	return
+
+^+/::
+	; General comment
+	InputBox, UserInput, Comment, Please enter a comment.,
+	if ErrorLevel
+	    MsgBox, CANCEL was pressed.
+	else
+		; FormatTime, CurrentDate,,MM/dd/yy
+		SetKeyDelay, 1  ;
+		SendInput //> %UserInput% <//		
+	return
+
+^[::
+	; Begin Region
+	InputBox, UserInput, Comment, Please enter a comment.,
+	if ErrorLevel
+	    MsgBox, CANCEL was pressed.
+	else
+		SetKeyDelay, 1  ;
+		; FormatTime, CurrentDate,,MM/dd/yy
+		SendInput ^{$REGION '%UserInput%'}		
+	return
+
+^]::
+	; End Region
+	Send {$ENDREGION}
+	return
+
+^+h::
+	; General comment
+	InputBox, UserInput, Tag, Please enter a Tag to replace ???.,
+	if ErrorLevel
+		MsgBox, CANCEL was pressed.
+	else		
+		SetKeyDelay, 1  ;
+		SendInput %UserInput%
+		Send ^{h}
+		SendInput ???
+		Send {TAB}
+		SendInput %UserInput%
+		Send !{a}
+		Send !{y}
+		Send {ESC}
+	return
+
+~^+c::
+	; Close Greenshot editor after copy
+	IfWinActive, ahk_class WindowsForms10.Window.8.app.0.19c1610_r11_ad1
+	{
+		WinActivate
+		WinClose
+		return 
+	}
+	IfWinActive, ahk_class SnagIt9Editor
+	; Send ^c
+	ClipWait, 1 ; Wait for the clipboard to contain text.
+	MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
+	return
+
+!+r::
+	; Sleep 1000 ; If successful, the reload will close this instance during the Sleep, so the line below will never be reached.	
+	; MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
+	; IfMsgBox, Yes, Edit
+	return
+
+^+r::
+	; Example 1
+	IfWinExist, ahk_class Notepad
+
+	{
+	WinActivate  ; Automatically uses the window found above.
+	WinGetText, MyText
+	MsgBox, 4,, MyText
+	return
+	; Initialize string to search.
+	strTag := B01
+	
+	; Initialize counter to keep track of our position in the string.
+	Position := 0
+	Loop, Parse, WinText, strTag
+	
+	; Calculate the position of the B at the end of this field.
+    	Position += StrLen(A_LoopField) + 1
+    	
+	Delimiter := SubStr(WinText, Position, 1)
+
+    	    
+	Send, Field: %A_LoopField%`nDelimiter: %Delimiter% {Enter}
+	return
+	}
+	
+!^+x:: ; select text press shift-ctrl-alt-x
+	SetKeyDelay, 1  ; Smallest possible
+	Send, ^x
+	ClipWait, 2
+	IfWinActive, ahk_class #32770 
+		Gosub CloseConfirmation
+	
+	Gosub AddComments
+
+	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
+
+	Send {Down}
+	Send // ???_%A_YYYY%%A_MM%%A_DD% >>  
+  	Send {Enter}
+	Send ^v
+	Send // ???_%A_YYYY%%A_MM%%A_DD% <<
+	Send {Enter}
+	return
+
+	CloseConfirmation:
+		;Clipsaved := ClipboardAll
+		WinActivate
+		Send {Enter}
+		;Clipboard := Clipsaved
+		Return
+
+	AddComments:
+		StringReplace, Clipboard, Clipboard, `r`n, `r`n, UseErrorLevel
+			;If ErrorLevel <= 10000 ; if 10000 or fewer lines
+		  	{
+			  	StringReplace, Clipboard, Clipboard, `r`n, `r`n//%A_Space%, All
+			  	If InStr(Clipboard, "`r`n") != 1
+		  			Clipboard := "// " . Clipboard
+			}
+		return
+
+
+^+0::
+; Test
+WinGet, ActiveControlList, ControlList, A
+Loop, Parse, ActiveControlList, `n
+{
+    ;MsgBox, 4,, Control #%a_index% is "%A_LoopField%". Continue?
+    	this_id := id%A_Index%
+	this_txt := %A_LoopField%
+   	
+	WinActivate, ahk_id %this_id%
+	WinMove, ahk_id %this_id%,,,,800,600
+	MsgBox, 4,, The Control window's ID is "%a_index%".Continue?
+	    IfMsgBox, No
+        	break
+}
+return
+
+^+1::
+WinActivate, Bridgeport Fittings - Microsoft Dynamics NAV Classic ahk_class C/SIDE Application
+ControlMove, C/SIDE Form1, 592, 125, 1314, 877, ahk_class C/SIDE Application
+return
+
+^+2::
+WinActivate, Bridgeport Fittings - Microsoft Dynamics NAV Classic ahk_class C/SIDE Application
+ControlMove, C/SIDE Form1, -4, -4, 1928, 1044, ahk_class C/SIDE Application
+return
+
+^+3::
+WinActivate, Bridgeport Fittings - Microsoft Dynamics NAV Classic ahk_class C/SIDE Application
+ControlMove, , 592, 125, 1314, 877, ahk_class C/SIDE Application
+return
+
+^+4::
+WinActivate, Bridgeport Fittings - Microsoft Dynamics NAV Classic ahk_class C/SIDE Application
+;ControlMove, , , , 1314, 877, ahk_class C/SIDE Application
+;ControlGetFocus, control, ahk_class C/SIDE Application
+;SendMessage, 0x115, 0, 0, %control%, ahk_class C/SIDE Application
+PostMessage, 0x46, 664, 296, C/SIDE SubForm1, ahk_class C/SIDE Application
+return

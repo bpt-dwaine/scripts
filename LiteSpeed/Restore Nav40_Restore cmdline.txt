@@ -1,0 +1,2 @@
+sqllitespeed.exe -RDatabase -F"F:\RemoteDB\Restore\Nav40_full_1393383600_20140225220000.bak" -N1 -D "Nav40_Restore" -WREPLACE -WNORECOVERY -W"MOVE 'Navision Demo Database (4-0)_Data' TO 'E:\Nav40_Restore_1.mdf'" -W"MOVE 'Navision Demo Database (4-0)_Log' TO 'D:\Nav40_Restore_log_1.ldf'" -A0 -S"bpt-navdevv3" -T
+

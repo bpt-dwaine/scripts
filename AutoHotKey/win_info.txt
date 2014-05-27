@@ -1,0 +1,34 @@
+
+=======================
+this_id 0x201a6
+this_class C/SIDE Application
+this_title MGT_OMA_50k - Microsoft Dynamics NAV Classic
+this_text >>
+Object Designer
+C/SIDE SubForm
+C/SIDE ScrollBar
+Toolbar
+Status Bar
+Navigation Pane
+Mergetool
+NavPaneTree
+
+
+=======================
+
+=======================
+this_id 0x201a6
+this_class C/SIDE Application
+this_title MGT_OMA_50k - Microsoft Dynamics NAV Classic
+this_text >>
+Object Designer
+C/SIDE SubForm
+C/SIDE ScrollBar
+Toolbar
+Status Bar
+Navigation Pane
+Mergetool
+NavPaneTree
+
+
+=======================

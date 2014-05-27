@@ -1,0 +1,1 @@
+nassql.exe appservername=BPT-navdev6-SQL, uninstallasservice
