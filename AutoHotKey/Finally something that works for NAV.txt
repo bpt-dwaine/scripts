@@ -1,0 +1,23 @@
+;Finally something that works for NAV
+!^+x:: ; select text press shift-ctrl-alt-x
+	SetKeyDelay, 1  ; Smallest possible
+	OldClipboard := Clipboard
+	Send, ^x
+	ClipWait, 0
+	IfWinActive, ahk_class #32770 
+		Send {Enter}
+	Send {Down}
+	Sleep, 1000
+	Gosub AddComments
+	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
+	Send ^v
+	Clipboard := OldClipboard 
+	return
+
+	;-----------------------------------------------------------------------------
+;--- SUB routines ------------------------------------------------------------
+;-----------------------------------------------------------------------------
+	AddComments:
+		Clipboard := "// ???_20140605 >>" . Clipboard . "`n// ???_20140605 <<"
+		StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All		
+		return

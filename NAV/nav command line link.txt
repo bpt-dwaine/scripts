@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Microsoft Dynamics NAV\60\Classic\finsql.exe" SERVERNAME=BPT-NAV6V2, DATABASE=Nav40, COMPANY="Bridgeport Fittings",NTAUTHENTICATION=1,ID=fin

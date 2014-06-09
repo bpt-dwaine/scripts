@@ -215,34 +215,21 @@ DocTag := "???"
 
 !^+x:: ; select text press shift-ctrl-alt-x
 	SetKeyDelay, 1  ; Smallest possible
+	OldClipboard := Clipboard
 	Send, ^x
 	ClipWait, 0
-	OldClipboard := Clipboard
 	IfWinActive, ahk_class #32770 
 		Send {Enter}
+	Send {Down}
+	Sleep, 1000
 	Gosub AddComments
 	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
 			
-	Send {End}
-	Sleep, 2000
-	Send {F3}
-	Sleep, 2000
-	Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% >>
-	Sleep, 2000
 	;Send {Enter}
-	;Sleep, 2000
-	;Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% <<
-	;Sleep, 2000
+	;Sleep, 1000
 	Send ^v
-	Sleep, 2000
-	Send {Enter}
-	Sleep, 2000
-	Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% <<
-	Sleep, 2000
-	;Send {Up}
-	;Sleep, 2000
-	;Send {F3}
-	;Send {Home}
+	;Send {Enter}
+	;Sleep, 1000
 	Clipboard := OldClipboard 
 	return
 	
@@ -260,14 +247,32 @@ DocTag := "???"
 ;--- SUB routines ------------------------------------------------------------
 ;-----------------------------------------------------------------------------
 	AddComments:
-		StringReplace, Clipboard, Clipboard, `r`n, `r`n, UseErrorLevel
-			If ErrorLevel <= 10000 ; if 10000 or fewer lines
-		  	{
-			  	;StringReplace, Clipboard, Clipboard, `r`n, `r`n//%A_Space%, All
-				StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All
-			  	If InStr(Clipboard, "`r`n") != 1
-		  			Clipboard := "//-" . Clipboard
-			}
+		;Clipboard := "/*`n" . Clipboard . "`n*/" ; wrap with comments tag
+		Clipboard := "// ???_20140605 >>" . Clipboard . "`n// ???_20140605 <<"
+		StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All		
+		;StringReplace, Clipboard, Clipboard, `r`n, `r`n, UseErrorLevel
+		;	If ErrorLevel <= 10000 ; if 10000 or fewer lines
+		;  	{
+		;	  	;StringReplace, Clipboard, Clipboard, `r`n, `r`n//%A_Space%, All
+		;		StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All
+		;	  	If InStr(Clipboard, "`r`n") != 1
+		;  			Clipboard := "//-" . Clipboard
+		;	}
+		return
+	AddCommentsV2:
+		; Initialize counter to keep track of our position in the string.
+		Position := 0
+		Loop, Parse, Clipboard, `n, `r 
+		; Calculate the position of the B at the end of this field.
+		Position += StrLen(A_LoopField) + 1
+		;Delimiter := SubStr(Clipboard, Position, 1)
+		Delimiter := Position
+		if (A_Index = 1) { 
+		Send, Index: %A_Index% Field: %A_LoopField%`nDelimiter: %Delimiter%
+		} ELSE {
+		Send, Index: %A_Index% Field: %A_LoopField%`nDelimiter: %Delimiter%
+		}
+		Send {Enter}
 		return
 
 		AddPipeX:

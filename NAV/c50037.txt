@@ -1,0 +1,477 @@
+OBJECT Codeunit 50037 Misc. Functions
+{
+  OBJECT-PROPERTIES
+  {
+    Date=05/29/14;
+    Time=[ 5:12:35 PM];
+    Version List=BF3.0.02.020,BGA1.05.023;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            RunFunction := 'UpdateItem';
+
+            Code;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      RunFunction@1000000000 : Text[30];
+
+    PROCEDURE Code@1000000003();
+    BEGIN
+      CASE RunFunction OF
+        'TestPalletizer': TestPalletizer;
+        'WhseEntryUpdate': WhseEntryUpdate;
+        'ArchiveBGAWkshLine' : ArchiveBGAWkshLine;
+        'UpdateItem' : UpdateItem;
+        'UpdateProcUnit' : UpdateProcUnit;
+        'UpdateCommissionLedgEntry' : UpdateCommissionLedgEntry;
+        'CopyCashAppBatch' : CopyCashAppBatch;
+        'UpdateCustLedgEntry' : UpdateCustLedgEntry;
+        'CopyJournalLineDimension' : CopyJournalLineDimension;
+        'UpdateCustLedgEntryV2' : UpdateCustLedgEntryV2;
+        'PostBuyerPaymentOffset' : PostBuyerPaymentOffset;
+        'UpdateBGAWkshLine' : UpdateBGAWkshLine;
+        'PopulateWkshLine' : PopulateWkshLine;
+      END;
+      MESSAGE('Function %1 processed',RunFunction);
+    END;
+
+    PROCEDURE TestPalletizer@1000000000();
+    VAR
+      WhseShipHeader@1000000001 : Record 7320;
+      DocNmbr@1000000000 : Code[10];
+    BEGIN
+      DocNmbr :='WS0150745' ;
+      WhseShipHeader.SETCURRENTKEY("No.");
+      WhseShipHeader.SETRANGE("No.", DocNmbr);
+      WhseShipHeader.FINDFIRST;
+      CODEUNIT.RUN(50007,WhseShipHeader);
+    END;
+
+    PROCEDURE WhseEntryUpdate@1000000005();
+    VAR
+      lWhseEntry@1000000000 : Record 7312;
+    BEGIN
+      lWhseEntry.SETRANGE("Location Code",'99WHSE');
+      lWhseEntry.SETRANGE("Item No.",'02539');
+      IF lWhseEntry.FINDSET THEN
+        REPEAT
+          lWhseEntry.Weight := lWhseEntry."Qty. (Base)" * 0.01184;
+          lWhseEntry.MODIFY;
+        UNTIL lWhseEntry.NEXT = 0;
+    END;
+
+    PROCEDURE ArchiveBGAWkshLine@1000000001();
+    VAR
+      lLine@1000000000 : Record 50110;
+      lLineBKUP@1000000001 : Record 50111;
+      lLastArchiveNo@1000000002 : Integer;
+      lNextArchiveNo@1000000003 : Integer;
+    BEGIN
+      // B02_20140425 >>
+      lLineBKUP.RESET;
+      IF lLineBKUP.FINDLAST THEN
+        lLastArchiveNo := lLineBKUP."Archive No.";
+
+      lNextArchiveNo := lLastArchiveNo + 1;
+      lLine.RESET;
+      lLine.SETFILTER("Applies-to ID",'<>%1','');
+      IF lLine.FINDSET THEN
+        REPEAT
+          lLineBKUP.INIT;
+          lLineBKUP.TRANSFERFIELDS(lLine);
+          lLineBKUP."Archive No." := lNextArchiveNo;
+          lLineBKUP.INSERT;
+        UNTIL lLine.NEXT = 0;
+      // B02_20140425 <<
+    END;
+
+    PROCEDURE CopyCashAppBatch@1000000010();
+    VAR
+      lGenJnlLine@1000000002 : Record 81;
+      lGenJnlLine2@1000000003 : Record 81;
+      lTempCustLedg@1000000000 : Record 50110;
+      lTempCustLedgBKUP@1000000001 : Record 50111;
+    BEGIN
+      // B02_20140415 >>
+      lGenJnlLine.SETRANGE("Journal Template Name",'CASH RECEI');
+      lGenJnlLine.SETRANGE("Journal Batch Name", 'CASHAPP');
+      IF lGenJnlLine.FINDSET THEN
+        REPEAT
+          lGenJnlLine2.INIT;
+          lGenJnlLine2.TRANSFERFIELDS(lGenJnlLine);
+          lGenJnlLine2."Journal Batch Name" := 'CASHAPPBAK';
+          lGenJnlLine2.INSERT;
+        UNTIL lGenJnlLine.NEXT = 0;
+      // B02_20140415 <<
+    END;
+
+    PROCEDURE CopyJournalLineDimension@1000000011();
+    VAR
+      lJnlLineDim@1000000002 : Record 356;
+      lJnlLineDim2@1000000003 : Record 356;
+      lTempCustLedg@1000000000 : Record 50110;
+      lTempCustLedgBKUP@1000000001 : Record 50111;
+    BEGIN
+      // B02_20140415 >>
+      lJnlLineDim.SETRANGE("Table ID",81);
+      lJnlLineDim.SETRANGE("Journal Template Name",'CASH RECEI');
+      lJnlLineDim.SETRANGE("Journal Batch Name", 'CASHAPP');
+      IF lJnlLineDim.FINDSET THEN
+        REPEAT
+          lJnlLineDim2.INIT;
+          lJnlLineDim2.TRANSFERFIELDS(lJnlLineDim);
+          lJnlLineDim2."Journal Batch Name" := 'CASHAPPBAK';
+          lJnlLineDim2.INSERT;
+        UNTIL lJnlLineDim.NEXT = 0;
+      // B02_20140415 <<
+    END;
+
+    PROCEDURE UpdateItem@1000000002();
+    VAR
+      lItem@1000000000 : Record 27;
+      lItem2@1240060000 : Record 27;
+      lLoopIdx@1000000001 : Integer;
+      lItemFilter@1240060001 : Text[1024];
+    BEGIN
+      // B01_20140315 >>
+      //lItem.SETRANGE("Inventory Posting Group",'FINISHED');
+
+      lItemFilter := '39NWRIST7702355|43-14SAFE002356|61505|61515|61751|61752|61755|61764|61765|' +
+       '61810|82000|82001|82002|82003|82004|82005|82006|82007|82008|82009|82020|' +
+       '82021|82022|82023|82024|82025|82026|82027|82028|82029|82030|82031|82032|' +
+       '82033|82034|82035|82036|82037|82038|82039|82041|82042|82043|82044|82045|' +
+       '82046|82048|82049|82080|82081|82082|82083|82084|82085|82086|82089|99700|' +
+       'LXS21-007722150|STD.SPRING02359';
+
+      lItem.SETFILTER("Item Category Code",'%1','98');
+      //lItem.SETrange("Item Status",lItem."Item Status"::Obsolete);
+      lItem.SETFILTER("No.",lItemFilter);
+      IF lItem.FINDSET THEN
+       REPEAT
+        //lItem."Direct Ship Item" := FALSE;
+        lItem2.GET(lItem."No.");
+        //lItem2."Item Status" := lItem2."Item Status"::Active;
+        lItem2."Item Status" := lItem2."Item Status"::Obsolete;
+        lItem2.MODIFY;
+       UNTIL lItem.NEXT = 0;
+      // B01_20140315 <<
+    END;
+
+    PROCEDURE UpdateItemLoop@1000000006();
+    VAR
+      lItem@1000000000 : Record 27;
+      lLoopIdx@1000000001 : Integer;
+    BEGIN
+      // B01_20140315 >>
+      FOR lLoopIdx := 1 TO 7 DO
+        BEGIN
+          CASE lLoopIdx OF
+            1: lItem.SETFILTER("No.",'%1..%2|%3|%4','00321','00330','00951','00953');
+            2: lItem.SETFILTER("No.",'%1..%2','00230','00237');
+            3: lItem.SETFILTER("No.",'%1..%2','00239','00247');
+            4: lItem.SETFILTER("No.",'%1..%2','00249','00257');
+            5: lItem.SETFILTER("No.",'%1..%2|%3','00259','00267','00269');
+            6: lItem.SETFILTER("No.",'%1..%2','10230','10237');
+            7: lItem.SETFILTER("No.",'%1..%2|%3','10239','10257','10259');
+          END;
+          lItem.SETRANGE("Inventory Posting Group",'FINISHED');
+          IF lItem.FINDSET THEN
+           REPEAT
+            lItem."Direct Ship Item" := FALSE;
+            lItem.MODIFY;
+           UNTIL lItem.NEXT = 0;
+        END;
+      // B01_20140315 <<
+    END;
+
+    PROCEDURE UpdateProcUnit@1000000007();
+    VAR
+      lProcUnit@1000000000 : Record 14000555;
+      lLoopIdx@1000000001 : Integer;
+    BEGIN
+      // B02_20140402 >>
+      //lProcUnit.SETRANGE("Inventory Posting Group",'FINISHED');
+      //IF lProcUnit.FINDSET THEN
+      // REPEAT
+      //  lProcUnit."Direct Ship Item" := FALSE;
+      //  lProcUnit.MODIFY;
+      // UNTIL lProcUnit.NEXT = 0;
+      lProcUnit.SETRANGE("Location Code",'99WHSE');
+      lProcUnit.SETRANGE("Item No.",'99039');
+      //lProcUnit.SETRANGE("Inventory Posting Group",'FINISHED');
+      lProcUnit.MODIFYALL("Change Reforecast Required",TRUE);
+      // B02_20140402 <<
+    END;
+
+    PROCEDURE UpdateProcUnitLoop@1000000004();
+    VAR
+      lProcUnit@1000000002 : Record 14000555;
+      lLoopIdx@1000000001 : Integer;
+    BEGIN
+      // B02_20140402 >>
+      {
+      FOR lLoopIdx := 1 TO 7 DO
+        BEGIN
+          CASE lLoopIdx OF
+            1: lItem.SETFILTER("No.",'%1..%2|%3|%4','00321','00330','00951','00953');
+            2: lItem.SETFILTER("No.",'%1..%2','00230','00237');
+            3: lItem.SETFILTER("No.",'%1..%2','00239','00247');
+            4: lItem.SETFILTER("No.",'%1..%2','00249','00257');
+            5: lItem.SETFILTER("No.",'%1..%2|%3','00259','00267','00269');
+            6: lItem.SETFILTER("No.",'%1..%2','10230','10237');
+            7: lItem.SETFILTER("No.",'%1..%2|%3','10239','10257','10259');
+          END;
+          lItem.SETRANGE("Inventory Posting Group",'FINISHED');
+          IF lItem.FINDSET THEN
+           REPEAT
+            lItem."Direct Ship Item" := FALSE;
+            lItem.MODIFY;
+           UNTIL lItem.NEXT = 0;
+        END;
+      }
+      // B02_20140402 <<
+    END;
+
+    PROCEDURE UpdateCommissionLedgEntry@1000000009();
+    VAR
+      lCommLedgEntry@1000000000 : Record 50008;
+    BEGIN
+      // B02_20140409 >>
+      //lCommLedgEntry.SETFILTER("Posting Date",'%1..%2',030114D,033114D);
+      //lCommLedgEntry.SETFILTER("Buying Group No.",'<>%1','GRAYBAR');
+      //lCommLedgEntry.MODIFYALL(Open,FALSE);
+      // B02_20140409 <<
+
+      // B02_20140409 >>
+      lCommLedgEntry.SETFILTER("Posting Date",'%1..%2',030114D,033114D);
+      //lCommLedgEntry.SETFILTER("Commission Code",'14');
+      lCommLedgEntry.SETFILTER("Commission Code"
+       ,'10|14|16|18|24|25|29|31|33|37|38|40|42|44|47|50|55|60|64|66|74|80');
+      lCommLedgEntry.SETFILTER("Buying Group No.",'<>%1','GRAYBAR');
+      IF lCommLedgEntry.FINDSET THEN
+        REPEAT
+          lCommLedgEntry.Open := TRUE;
+          lCommLedgEntry."Purch. Document Type" := 0;
+          lCommLedgEntry."Purch. Document No." :=  '';
+          lCommLedgEntry."Purch. Line No." := 0;
+          lCommLedgEntry.MODIFY(TRUE);
+        UNTIL lCommLedgEntry.NEXT = 0;
+      // B02_20140409 <<
+    END;
+
+    PROCEDURE UpdateCustLedgEntry@1000000008();
+    VAR
+      lCustLedgEntry@1000000000 : Record 21;
+      lCustLedgEntry2@1000000001 : Record 21;
+    BEGIN
+      // B02_20140409 >>
+      lCustLedgEntry.SETRANGE("Applies-to ID",'DWAINEK');
+      lCustLedgEntry.SETRANGE("Buying Group No.",'CED');
+      IF lCustLedgEntry.FINDSET THEN
+        REPEAT
+          lCustLedgEntry2.GET(lCustLedgEntry."Entry No.");
+          lCustLedgEntry2."Applies-to ID" := '';
+          lCustLedgEntry2.MODIFY(TRUE);
+        UNTIL lCustLedgEntry.NEXT = 0;
+      // B02_20140409 <<
+    END;
+
+    PROCEDURE UpdateCustLedgEntryV2@1000000012();
+    VAR
+      lCustLedgEntry@1000000000 : Record 21;
+      lCustLedgEntry2@1000000001 : Record 21;
+      lUserID@1000000006 : Code[20];
+      lGenJnlTemplate@1000000005 : Code[20];
+      lGenJnlBatch@1000000004 : Code[20];
+      NextLineNo@1000000003 : Integer;
+      lBGCustNo@1000000002 : Code[20];
+    BEGIN
+      // B02_20140409 >>
+      lBGCustNo := 'IMARK';
+      lUserID := 'B3203';
+      lCustLedgEntry.SETRANGE("Applies-to ID",lUserID);
+      lCustLedgEntry.SETRANGE("Buying Group No.",lBGCustNo);
+      lCustLedgEntry.SETRANGE(Open,TRUE);
+      IF lCustLedgEntry.FINDSET THEN
+        REPEAT
+          lCustLedgEntry2.GET(lCustLedgEntry."Entry No.");
+          lCustLedgEntry2.CALCFIELDS("Remaining Amount");
+          //lCustLedgEntry2."Applies-to ID" := 'MARSM';
+          lCustLedgEntry2.VALIDATE("Amount to Apply",lCustLedgEntry2."Remaining Amount");
+          lCustLedgEntry2.MODIFY(TRUE);
+        UNTIL lCustLedgEntry.NEXT = 0;
+      // B02_20140409 <<
+    END;
+
+    PROCEDURE PostBuyerPaymentOffset@1000000024();
+    VAR
+      GenJnlLine2@1000000006 : Record 81;
+      GenJnlLineNew@1000000005 : Record 81;
+      Customer@1000000009 : Record 18;
+      CustPost@1000000010 : Record 92;
+      SourceSetup@1000000011 : Record 242;
+      ApplyCustLedgerEntry@1000000001 : Record 50110;
+      CustLedgerEntry@1000000000 : Record 21;
+      lUserID@1000000007 : Code[20];
+      lGenJnlTemplate@1000000002 : Code[20];
+      lGenJnlBatch@1000000003 : Code[20];
+      NextLineNo@1000000004 : Integer;
+      lBGCustNo@1000000008 : Code[20];
+      SourceCode@1000000012 : Code[20];
+      lApplnDate@1000000013 : Date;
+    BEGIN
+      //BPT0001
+      lBGCustNo := 'IMARK';
+      lUserID := 'B3203';
+      lGenJnlTemplate := 'CASH RECEI';
+      lGenJnlBatch := 'CASHAPP';
+      lApplnDate := 042514D;
+      //BPT0006 <<
+      IF SourceSetup.GET THEN
+        SourceCode := SourceSetup."Sales Entry Application";
+
+      GenJnlLine2.RESET;
+      GenJnlLine2.SETRANGE("Journal Template Name",lGenJnlTemplate);
+      GenJnlLine2.SETRANGE("Journal Batch Name",lGenJnlBatch);
+      IF GenJnlLine2.FINDLAST THEN
+        NextLineNo := GenJnlLine2."Line No.";
+
+      CustLedgerEntry.RESET;
+      CustLedgerEntry.SETRANGE("Applies-to ID",lUserID);
+      CustLedgerEntry.SETRANGE("Buying Group No.",lBGCustNo);
+      CustLedgerEntry.SETFILTER("Amount to Apply",'<>0');
+      IF CustLedgerEntry.FINDSET THEN
+      BEGIN
+        Customer.GET(CustLedgerEntry."Customer No.");
+        IF CustPost.GET(Customer."Customer Posting Group") THEN;
+       REPEAT
+         GenJnlLineNew.INIT;
+         GenJnlLineNew."Journal Template Name"  := lGenJnlTemplate;
+         GenJnlLineNew."Journal Batch Name"    := lGenJnlBatch;
+         NextLineNo += 10;
+         GenJnlLineNew."Line No." := NextLineNo;
+         GenJnlLineNew.VALIDATE("Account Type",GenJnlLineNew."Account Type"::"G/L Account");
+         GenJnlLineNew.VALIDATE("Account No.",CustPost."G/L Interim Account");
+         //BPT0007  <<
+         //GenJnlLineNew.VALIDATE("Posting Date",ApplnDate);
+         GenJnlLineNew.VALIDATE("Posting Date",lApplnDate);
+         GenJnlLineNew.VALIDATE("Document Date",lApplnDate);
+         //BPT0007
+         GenJnlLineNew."Document No." := lUserID;
+         GenJnlLineNew.Description := Customer.Name;
+         GenJnlLineNew.VALIDATE("Bal. Account Type",GenJnlLineNew."Account Type"::Customer);
+         GenJnlLineNew.VALIDATE("Bal. Account No.",CustLedgerEntry."Customer No.");
+         GenJnlLineNew.VALIDATE(Amount,CustLedgerEntry."Amount to Apply");
+         //BPT0004
+         IF  CustLedgerEntry."External Document No." <> '' THEN
+           GenJnlLineNew."External Document No." := CustLedgerEntry."External Document No." ELSE
+           GenJnlLineNew."External Document No." := CustLedgerEntry."Document No.";
+         IF  GenJnlLineNew."External Document No." = '' THEN
+            GenJnlLineNew."External Document No." := ApplyCustLedgerEntry."External Document No.";
+         //BPT0004
+         GenJnlLineNew.VALIDATE("Applies-to Doc. Type",CustLedgerEntry."Document Type");
+         GenJnlLineNew.VALIDATE("Applies-to Doc. No.",CustLedgerEntry."Document No.");
+         GenJnlLineNew."Reason Code" := CustLedgerEntry."Reason Code";
+         //BPT0006 <<
+         GenJnlLineNew."System-Created Entry" := TRUE;
+         GenJnlLineNew."Source Code" := SourceCode;
+         //BPT0006 >>
+         GenJnlLineNew.INSERT(TRUE);
+       UNTIL CustLedgerEntry.NEXT = 0;
+      END;
+      //BPT0001
+    END;
+
+    PROCEDURE UpdateBGAWkshLine@1000000013();
+    VAR
+      lWkshLine@1000000000 : Record 50110;
+      lWkshLine2@1000000001 : Record 50110;
+    BEGIN
+      // B02_20140409 >>
+      lWkshLine.SETFILTER("Applies-to ID",'<>%1','');
+      IF lWkshLine.FINDSET THEN
+        REPEAT
+          lWkshLine.Changed := TRUE;
+          lWkshLine.MODIFY(TRUE);
+        UNTIL lWkshLine.NEXT = 0;
+      // B02_20140409 <<
+    END;
+
+    PROCEDURE PopulateWkshLine@1000000015();
+    VAR
+      lCurrentJnlBatchName@1000000006 : Code[20];
+      pLine@1000000003 : Record 50110;
+      lLine@1240060000 : Record 50110;
+      lCustLedgEntry@1000000002 : Record 21;
+      lCustomer@1000000004 : Record 18;
+      lCurrentJnlTemplateName@1000000000 : Code[20];
+      lLastCust@1000000005 : Code[20];
+      lPaymentFound@1000000001 : Boolean;
+      Text50001@1000000007 : TextConst 'ENU=%1 is not a Valid Customer number';
+      Text50014@1000000008 : TextConst 'ENU=No open payment found to apply.;ESM=no est  dentro del periodo de fechas de registro permitidas;FRC=n''est pas dans l''intervalle de dates de report permis;ENC=is not within your range of allowed posting dates';
+      lCurrentDocNo@1000000009 : Code[20];
+    BEGIN
+      // ???_20140513 >>
+      lCurrentJnlTemplateName := 'BGA';
+      lCurrentJnlBatchName := 'CED';
+      lCurrentDocNo := 'B3220A';
+      lLastCust := '';
+      lCustLedgEntry.RESET;
+      lCustLedgEntry.SETCURRENTKEY("Buying Group No.",Open,"Customer No.");
+
+      lCustLedgEntry.SETRANGE("Buying Group No.",lCurrentJnlBatchName);
+      lCustLedgEntry.SETFILTER("Document No.",'567930|568539|B3220A*');
+      lCustLedgEntry.SETRANGE(Open,FALSE);
+      IF lCustLedgEntry.FINDSET THEN
+        REPEAT
+          IF NOT pLine.GET(lCurrentJnlTemplateName
+           ,lCurrentJnlBatchName,lCustLedgEntry."Entry No.") THEN
+          BEGIN
+            pLine.INIT;
+            pLine.TRANSFERFIELDS(lCustLedgEntry);
+            pLine."Worksheet Template Name" := lCurrentJnlTemplateName;
+            pLine."Journal Batch Name" := lCurrentJnlBatchName;
+            IF pLine.INSERT THEN
+            BEGIN
+              lCustLedgEntry.CALCFIELDS(Amount,"Original Amount");
+              IF lCustLedgEntry."Customer No." <> lLastCust THEN
+                IF lCustomer.GET(lCustLedgEntry."Customer No.") THEN
+                  lLastCust := lCustLedgEntry."Customer No.";
+              pLine.Name := lCustomer.Name;
+              pLine.Description := lCustomer.Name;
+              pLine.Amount := lCustLedgEntry.Amount;
+              pLine."Remaining Amount":=  lCustLedgEntry."Original Amount";
+              pLine."Original Amount" := lCustLedgEntry."Original Amount";
+              pLine."Pmt. Disc. Given (LCY)" := lCustLedgEntry."Pmt. Disc. Given (LCY)";
+              pLine.Selected := TRUE;
+              pLine.Open := TRUE;
+              pLine."Applies-to ID" := lCurrentDocNo;
+              IF pLine."Document Type" = pLine."Document Type"::Payment THEN
+                pLine."Applying Entry" := TRUE;
+              IF pLine.MODIFY THEN;
+            END;
+          END;
+        UNTIL lCustLedgEntry.NEXT = 0;
+
+      // ???_20140513 <<
+    END;
+
+    BEGIN
+    {
+      -- Bridgeport Fittings ---------------------------------------
+      Tag Date      Sig Reference Description
+      --------------------------------------------------------------
+
+      B00 02/03/14  DEK FRX00000  Reused
+      B01 03/14/14  DEK SRX00000  Update Items
+      B02 04/25/14  DEK SRX00000  Archive BGA
+    }
+    END.
+  }
+}
+
