@@ -201,15 +201,16 @@ DocTag := "???"
 ^+/:: 
 	;edit this line
 	SetKeyDelay, 1  ; Smallest possible
-	Send //
+	;Send //
+	Send, {Home}
 	Send, +{END}
 	Send, ^c
-	Send {Enter}
-	Send ^v
 	ClipWait, 0
+	Send {Enter}
 	IfWinActive, ahk_class #32770 
 		Send {Enter}
 	Gosub AddComments
+	Send ^v
 	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
 	return
 
@@ -224,12 +225,7 @@ DocTag := "???"
 	Sleep, 1000
 	Gosub AddComments
 	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
-			
-	;Send {Enter}
-	;Sleep, 1000
 	Send ^v
-	;Send {Enter}
-	;Sleep, 1000
 	Clipboard := OldClipboard 
 	return
 	
@@ -523,7 +519,34 @@ return
 	Sleep, 333
 	Send {Enter}
 	return
-; Unapply
+; Reverse one
+^+r::
+	;WinActivate, ahk_class C/SIDE Application
+	;ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+
+	;ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
+	;ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	SetTitleMatchMode, 2
+	SetTitleMatchMode, Fast
+	;SetControlDelay, 2 
+	SetKeyDelay, 2
+	Send {Alt Down}
+	Send {u}	
+	Sleep, 333
+	Send {r}
+	Send {Alt Up}
+	Sleep, 333
+	Send {F11}
+	Sleep, 333
+	Send {Left}
+	Sleep, 333
+	Send {Enter} ;Respond yes
+	Sleep, 333
+	Send {Enter} ;Respond ok
+	return
+	
+; Reverse
 ^+`::
 	WinActivate, ahk_class C/SIDE Application
 	ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
@@ -531,23 +554,58 @@ return
 	ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
 	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
 
-	Loop,5
+	Loop,28	
 	{
+	;Unapply
 	SetTitleMatchMode, 2
 	SetTitleMatchMode, Fast
 	;SetControlDelay, 2 
 	SetKeyDelay, 2
+	Sleep, 333y
 	;Send {Down}
+	Send {Alt Down}
+	Send {u}
+	Send {u}
+	Send {Alt Up}
 	Sleep, 333
-	Send {Shift Down}
-	Send {F9}
-	Send {Shift Up}
+	Send !{u}
 	Sleep, 333
-	Send {F11}
-	Sleep, 333
-	Send {Left}
+	Send {y}
 	Sleep, 333
 	Send {Enter}
+	WinWait, ahk_class C/SIDE Application, , 1000
+	if ErrorLevel
+	{
+		MsgBox, WinWait timed out.
+		return
+	}
+	else
+		Sleep, 100
+	
+	;Reverse
+	Send {Alt Down}
+	Send {u}	
+	Sleep, 333
+	Send {r}
+	Send {Alt Up}
+	Sleep, 333
+	Send {F11}
+	WinWait, ahk_class C/SIDE Application, , 1000
+	if ErrorLevel
+	{
+		MsgBox, WinWait timed out.
+		return
+	}
+	else
+		Sleep, 100
+	Send {Left}
+	Sleep, 333
+	Send {Enter} ;Respond yes
+	Sleep, 333
+	Send {Enter} ;Respond ok
+	Sleep, 333
+	Send {Down}
+	Sleep, 333
 	}
 	return
 
