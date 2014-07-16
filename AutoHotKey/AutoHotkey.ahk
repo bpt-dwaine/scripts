@@ -520,7 +520,7 @@ return
 	Send {Enter}
 	return
 ; Reverse one
-^+r::
+!^+r::
 	;WinActivate, ahk_class C/SIDE Application
 	;ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
 
