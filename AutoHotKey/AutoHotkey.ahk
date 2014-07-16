@@ -377,6 +377,8 @@ ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
 
 ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
 ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+if (FocusedText = "Object Manager")
+	return
 ControlMove, %FocusedText%, DimX+10, DimY+50, DimW*.99, DimH-60, ahk_class C/SIDE Application
 return
 
@@ -402,8 +404,8 @@ ControlMove, Section Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C
 ControlMove, C/AL Globals, DimX+260, DimY+50, DimW*.85, DimH*.33, ahk_class C/SIDE Application
 ControlMove, C/AL Locals, DimX+260, DimY+50, DimW*.85, DimH*.33, ahk_class C/SIDE Application
 ControlMove, C/AL Editor, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-ControlMove, Object Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-ControlMove, Object Manager, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
+;ControlMove, Object Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
+;ControlMove, Object Manager, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
 
 return
 
@@ -425,8 +427,8 @@ ControlMove, C/AL Locals, DimX+260, DimY+50, DimW*.50, DimH*.33, ahk_class C/SID
 
 ;-------------Right-----------------------------
 ControlMove, C/AL Editor, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
+;ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
+;ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
 return
 
 ^+NumpadAdd::
@@ -495,8 +497,8 @@ ControlMove, Form Designer, DimX+260, DimY+50, DimW*.50, DimH-60, ahk_class C/SI
 ControlMove, Section Designer, DimX+260, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
 ;-------------Right-----------------------------
 ControlMove, C/AL Editor, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
+;ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
+;ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
 return
 
 	
