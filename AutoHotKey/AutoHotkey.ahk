@@ -4,11 +4,68 @@ EnvGet, userProfile, USERPROFILE
 ;Software := userProfile . "\Dropbox\software\"
 Programs386 := "c:\Program Files (x86)\"
 ;"I:\Navision\Assets\IT Assets\Scripts\Autohotkey\DragAndDrop.ahk"
-DocTag := "???"
+DocTag := "UPGRADE"
 
 #Persistent
+;SetTimer, Alert1, 500
+;SetTimer, CloseMessageBox, 250
+return
+
+;OK to NAV message
+CloseMessageBox:
+If WinExist("ahk_class #32770") and WinExist("Microsoft Dynamics NAV")
+	{
+	ControlGetFocus, FocusedClassNN, ahk_class #32770
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class #32770
+	;ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class #32770 ;this would be the button
+	;msgbox Text is %FocusedText%
+	;IF %FocusedText% = OK 
+	;	{
+		;msgbox Text is %FocusedText%
+		WinGetPos, DimX, DimY, DimW, DimH, A
+		SplashTextOn, , , Closing NAV message
+		;WinGetPos,,, Width, Height, Closing a NAV OK message
+		;WinMove, Closing NAV message,, (A_ScreenWidth/2)-(Width/2), (A_ScreenHeight/2)-(Height/2) - 100
+		;WinMove, Closing NAV message,, (DimX/2)-(DimW/2), (DimY/2)-(DimH/2) - 100
+		WinMove, Closing NAV message,, DimX, DimY
+		Sleep, 250
+		SplashTextOff
+		WinClose, Microsoft Dynamics NAV Classic
+		return
+	;	}
+	;return
+	}
+return
+	
+Alert1:
+;IfWinNotExist, ahk_class #32770
+If WinExist("ahk_class #32770") and WinExist("Microsoft Dynamics NAV")
+	{
+	SetTimer, Alert1, off  ; i.e. the timer turns itself off here.
+	SplashTextOn, , , There is an OK message.
+	Sleep, 3000
+	SplashTextOff
+	}
+else
+return
+
+
+;WinGet, ControlList, ControlList, A
+;SetKeyDelay, 1  ; Smallest possible
+;IfWinActive, ahk_class #32770 
+;	;MsgBox, Message trigger	
+;	;ClassNN:	Button1
+;	ControlGetFocus, FocusedClassNN, ahk_class #32770
+;	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class #32770
+;	MsgBox message box says
+;	"%FocusedText%"
+;	Send {Enter}
+;return
+
+
 ;SetTimer, WatchActiveWindow, 200
 ;return
+
 ;WatchActiveWindow:
 ;WinGet, ControlList, ControlList, A
 ;ToolTip, %ControlList%
@@ -30,7 +87,7 @@ DocTag := "???"
 	Send {Enter}
 	Send No Ver    Dev   Reference       Date       Description
 	Send {Enter}
-	Send --------------------------------------------------------------
+	Send --------------------------------------------------------------DEK_20141002R
 	Send {Enter}
 	return
 
@@ -73,7 +130,7 @@ DocTag := "???"
 	    MsgBox, CANCEL was pressed.
 	else
 		;StringUpper, DocTag, UserInput 
-		DocTag := "B" + UserInput
+		DocTag := "BPT" + UserInput
 	
 	InputBox, UserInput, Comment, Please enter a comment.,
 	if ErrorLevel
@@ -81,7 +138,7 @@ DocTag := "???"
 	else
 		FormatTime, CurrentDate,,MM/dd/yy
 		SetKeyDelay, 1  ; Smallest possible
-		Send %DocTag% %CurrentDate%  DEK SRX00000  %UserInput%
+		Send %DocTag% DEK %CurrentDate%: ID000000  %UserInput%
 		Send {Enter}
 		Send ^{h}
 		Send ???
@@ -101,7 +158,7 @@ DocTag := "???"
 	    MsgBox, CANCEL was pressed.
 	else
 		;StringUpper, DocTag, UserInput 
-		DocTag := "B" + UserInput
+		DocTag := "BPT" + UserInput
 	
 	InputBox, UserInput, Comment, Please enter a comment.,
 	if ErrorLevel
@@ -109,7 +166,7 @@ DocTag := "???"
 	else
 		FormatTime, CurrentDate,,MM/dd/yy
 		SetKeyDelay, 1  ; Smallest possible
-		Send %DocTag% %CurrentDate%  DEK FRX00000  %UserInput%
+		Send %DocTag% %CurrentDate%  DEK ID000000  %UserInput%
 		Send {Enter}
 		Send ^{h}
 		Send ???
@@ -120,15 +177,43 @@ DocTag := "???"
 		Send {ESC}
 		DocTag := "???"
 	return    
+<^<+b::
+	;Send // ???_%A_YYYY%%A_MM%%A_DD% >>
+	Send ,BF5.00.000
+	return
 
+^!.::
+	;Send // ???_%A_YYYY%%A_MM%%A_DD% >>
+	;Send // UPGRADE_%A_YYYY%%A_MM%%A_DD% >>
+	Send // ??? >>
+	return
+
+^!,::
+	;Send // ???_%A_YYYY%%A_MM%%A_DD% <<
+	;Send // UPGRADE_%A_YYYY%%A_MM%%A_DD% <<
+	Send // ??? <<
+	return
+
+^!\::
+	; General comment
+	InputBox, UserInput, Comment, Please enter a comment.,
+	InputBox, UserInput, Comment, Please enter a comment.,
+	if ErrorLevel
+	    MsgBox, CANCEL was pressed.
+	else
+		; FormatTime, CurrentDate,,MM/dd/yy
+		Send //> %UserInput% <//		
+	return
 ^+.::
 	;Send // ???_%A_YYYY%%A_MM%%A_DD% >>
-	Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% >>
+	;Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% >>
+	Send // %DocTag% >>
 	return
 
 ^+,::
 	;Send // ???_%A_YYYY%%A_MM%%A_DD% <<
-	Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% <<
+	;Send // %DocTag%_%A_YYYY%%A_MM%%A_DD% <<
+	Send // %DocTag% <<
 	return
 
 ^+\::
@@ -138,11 +223,11 @@ DocTag := "???"
 	    MsgBox, CANCEL was pressed.
 	else
 		; FormatTime, CurrentDate,,MM/dd/yy
-		SendInput //> %UserInput% <//		
+		Send //> %UserInput% <//		
 	return
 ^+t::
 	; To Do
-		SendInput //> TODO <//		
+		Send //> TODO %A_MM%/%A_DD%/%A_YYYY% <//		
 	return
 
 ^+'::
@@ -155,9 +240,9 @@ DocTag := "???"
 		DocTag := UserInput 
 	return
 
-!^+t::
-	Send DEK_%A_YYYY%%A_MM%%A_DD%R
-	return
+;!^+t::
+	;Send DEK_%A_YYYY%%A_MM%%A_DD%R
+	;return
 	
 ^.::
 	Send //>
@@ -167,6 +252,195 @@ DocTag := "???"
 	Send //<
 	return
 	
+^+v::
+	;Visible FALSE
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		;-------------Left-----------------------------
+		ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+		ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
+		ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+		
+		Sleep, 333
+		ControlFocus, Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, Properties, {v}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Right}, ahk_class C/SIDE Application
+		SetKeyDelay, -1, 10
+		ControlSend, Properties, FALSE, ahk_class C/SIDE Application
+		ControlSend, Properties, {Tab}, ahk_class C/SIDE Application
+		
+		ControlFocus, %FocusedText%, ahk_class C/SIDE Application
+	return
+	
+^+e::
+	;Editable FALSE
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		;-------------Left-----------------------------
+		ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+		ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
+		ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+		
+		Sleep, 333
+		ControlFocus, Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, Properties, {e}, ahk_class C/SIDE Application
+		ControlSend, Properties, {e}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Right}, ahk_class C/SIDE Application
+		SetKeyDelay, -1, 10
+		ControlSend, Properties, FALSE, ahk_class C/SIDE Application
+		ControlSend, Properties, {Tab}, ahk_class C/SIDE Application
+		
+		ControlFocus, %FocusedText%, ahk_class C/SIDE Application
+	return
+	
+^+1::
+	;Standard NAV Field
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		;-------------Left-----------------------------
+		ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Page Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+
+		Sleep, 333
+		ControlFocus, Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, Properties, {i}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Right}, ahk_class C/SIDE Application
+		ControlSend, Properties, {s}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Tab}, ahk_class C/SIDE Application
+		
+		ControlFocus, Page Designer, ahk_class C/SIDE Application
+	return
+	
+^+2::
+	;Promote NAV Field
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		;-------------Left-----------------------------
+		ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Page Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+
+		Sleep, 333
+		ControlFocus, Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, Properties, {i}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Right}, ahk_class C/SIDE Application
+		ControlSend, Properties, {p}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Tab}, ahk_class C/SIDE Application
+		
+		ControlFocus, Page Designer, ahk_class C/SIDE Application
+	return
+	
+^+3::
+	;Additional NAV Field
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		;-------------Left-----------------------------
+		ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Page Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+
+		Sleep, 333
+		ControlFocus, Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		ControlSend, Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, Properties, {i}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Right}, ahk_class C/SIDE Application
+		ControlSend, Properties, {a}, ahk_class C/SIDE Application
+		ControlSend, Properties, {Tab}, ahk_class C/SIDE Application
+		
+		ControlFocus, Page Designer, ahk_class C/SIDE Application
+	return
+	
+^+4::
+	;NAV Action - Promote BIG
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		;-------------Left-----------------------------
+		ControlMove, - Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Page Action Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+
+		Sleep, 333
+		ControlFocus, - Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, - Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		Sleep, 333
+		ControlSend, - Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {p}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Right}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {y}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Down}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {p}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Down}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {y}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Down}, ahk_class C/SIDE Application
+		ControlFocus, Action Designer, ahk_class C/SIDE Application
+	return
+	
+^+5::
+	;NAV Action - Promote normal
+		SetTitleMatchMode, 2
+		SetTitleMatchMode, Fast
+		WinActivate, ahk_class C/SIDE Application
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+		ControlMove, - Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlMove, Page Action Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+
+		Sleep, 333
+		ControlFocus, - Properties, ahk_class C/SIDE Application
+		Send, {LControl Down}
+		ControlSend, - Properties, {Home}, ahk_class C/SIDE Application
+		Send, {LControl Up}
+		Sleep, 333
+		ControlSend, - Properties, {Home}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {p}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Right}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {y}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Down}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {p}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Down}, ahk_class C/SIDE Application
+		ControlSend, - Properties, {Delete}, ahk_class C/SIDE Application		
+		ControlSend, - Properties, {Down}, ahk_class C/SIDE Application
+		ControlFocus, Action Designer, ahk_class C/SIDE Application
+	return
+	
 ^[::
 	; Begin Region
 	InputBox, UserInput, Comment, Please enter a comment.,
@@ -174,7 +448,7 @@ DocTag := "???"
 	    MsgBox, CANCEL was pressed.
 	else
 		; FormatTime, CurrentDate,,MM/dd/yy
-		SendInput ^{$REGION '%UserInput%'}		
+		Send ^{$REGION '%UserInput%'}		
 	return
 
 ^]::
@@ -188,7 +462,7 @@ DocTag := "???"
 	if ErrorLevel
 		MsgBox, CANCEL was pressed.
 	else		
-		;SendInput %UserInput%
+		;Send %UserInput%
 		Send ^{h}
 		Send ???
 		Send {TAB}
@@ -198,21 +472,115 @@ DocTag := "???"
 		Send {ESC}
 	return
 
-^+/:: 
-	;edit this line
+^+;:: 
+	;Add blank version in editor
 	SetKeyDelay, 1  ; Smallest possible
-	;Send //
-	Send, {Home}
-	Send, +{END}
-	Send, ^c
+	Send, {End}
+	Send, {Backspace}
+	Send, `,
+	Send, b;
+	return
+
+^+b::
+	;Add BASE tag version in editor 
+	Send, {End}
+	Send, {Backspace}
+	Send, `,
+	Send, BF5.00.000;
+	return
+	
+^+-::	
+	ClipboardOld := ClipboardAll
+	Clipboard := ""
+	InsertPoint := 0
+	InsertPoint2 := 0
+	ClipboardFirst := ""
+	Loop
+	{
+		Send, ^+{Right}
+		A_Index2 := A_Index
+		Send, ^c
+		Sleep, 20
+		If (ClipboardFirst = "")
+			ClipboardFirst := Clipboard
+		If (Clipboard = "" || ClipboardFirst = Clipboard)
+			return
+		Length := StrLen(Clipboard)
+		InsertPoint := RegExMatch(Clipboard,"\.")
+		If (InsertPoint = 0)
+			continue
+		else
+			break
+	}
+	Send, {Left}
+	Send, ^{Right %A_Index2%}
+	Clipboard := ClipboardOld
+	ClipboardOld := ""
+return
+	
+^+q::	
+	ClipboardOld := ClipboardAll
+	Clipboard := ""
+	InsertPoint := 0
+	InsertPoint2 := 0
+	ClipboardFirst := ""
+	Loop
+	{
+		Send, ^+{Right}
+		A_Index2 := A_Index
+		Send, ^c
+		Sleep, 20
+		If (ClipboardFirst = "")
+			ClipboardFirst := Clipboard
+		If (Clipboard = "" || ClipboardFirst = Clipboard)
+			return
+		Length := StrLen(Clipboard)
+		InsertPoint := RegExMatch(Clipboard,"\.")
+		If (InsertPoint = 0)
+			continue
+		else
+			break
+	}
+	Send, {Left}
+	Send, ^{Right %A_Index2%}
+	Clipboard := ClipboardOld
+	ClipboardOld := ""
+return
+	
+^+/:: 
+	Clipboard := ""
+	
+	SetKeyDelay, 2  ; Smallest possible
+	Send {Home}
+	;Send, ^{Right}
+	Send +{END}
+	Send ^x
 	ClipWait, 0
-	Send {Enter}
+	
 	IfWinActive, ahk_class #32770 
 		Send {Enter}
-	Gosub AddComments
+	
+	Send // UPGRADE_%A_YYYY%%A_MM%%A_DD% >>	
+	Send {Enter}
+	
+	;Gosub AddCommentsV2
+	Send //
 	Send ^v
-	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
-	return
+	Send {Enter}
+	
+	;Clipboard := OldClipboard
+	;Send message('Replace:
+	Send ^v
+	;Send ');
+	;Sleep, 500
+	Send {Enter}
+	
+	Send // UPGRADE_%A_YYYY%%A_MM%%A_DD% <<
+	Send {Up}
+	Sleep, 500
+	Send {Home}
+	;Send, ^{Right}
+	return	
 
 !^+x:: ; select text press shift-ctrl-alt-x
 	SetKeyDelay, 1  ; Smallest possible
@@ -224,7 +592,6 @@ DocTag := "???"
 	Send {Down}
 	Sleep, 1000
 	Gosub AddComments
-	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
 	Send ^v
 	Clipboard := OldClipboard 
 	return
@@ -239,36 +606,36 @@ DocTag := "???"
 	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
 	return
 
+!^+q:: ; press shift-ctrl-alt-f to quote clipboard
+	SetKeyDelay, 1  ; Smallest possible
+	;Send, ^x
+	;ClipWait, 0
+	;IfWinActive, ahk_class #32770 
+	;	Send {Enter}
+	Gosub AddQuote
+	;MsgBox Control-C copied the following contents to the clipboard:`n`n%clipboard%
+	return
+
 ;-----------------------------------------------------------------------------
 ;--- SUB routines ------------------------------------------------------------
 ;-----------------------------------------------------------------------------
 	AddComments:
 		;Clipboard := "/*`n" . Clipboard . "`n*/" ; wrap with comments tag
-		Clipboard := "// ???_20140605 >>" . Clipboard . "`n// ???_20140605 <<"
+		Clipboard := "// UPGRADE_20140605 >>" . Clipboard . "`n// UPGRADE_20140605 <<"
 		StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All		
-		;StringReplace, Clipboard, Clipboard, `r`n, `r`n, UseErrorLevel
-		;	If ErrorLevel <= 10000 ; if 10000 or fewer lines
-		;  	{
-		;	  	;StringReplace, Clipboard, Clipboard, `r`n, `r`n//%A_Space%, All
-		;		StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All
-		;	  	If InStr(Clipboard, "`r`n") != 1
-		;  			Clipboard := "//-" . Clipboard
-		;	}
 		return
 	AddCommentsV2:
-		; Initialize counter to keep track of our position in the string.
-		Position := 0
-		Loop, Parse, Clipboard, `n, `r 
-		; Calculate the position of the B at the end of this field.
-		Position += StrLen(A_LoopField) + 1
-		;Delimiter := SubStr(Clipboard, Position, 1)
-		Delimiter := Position
-		if (A_Index = 1) { 
-		Send, Index: %A_Index% Field: %A_LoopField%`nDelimiter: %Delimiter%
-		} ELSE {
-		Send, Index: %A_Index% Field: %A_LoopField%`nDelimiter: %Delimiter%
-		}
-		Send {Enter}
+		
+		;Clipboard := Clipboard
+		;StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All		
+		StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, UseErrorLevel
+			If ErrorLevel <= 1 ; 
+		  	{
+			  	;StringReplace, Clipboard, Clipboard, `r`n, `r`n//%A_Space%, All
+				StringReplace, Clipboard, Clipboard, `r`n,  `r`n//, All
+			  	If InStr(Clipboard, "`r`n") != 1
+		  			Clipboard := "//" . Clipboard
+			}
 		return
 
 		AddPipeX:
@@ -285,12 +652,18 @@ DocTag := "???"
 			
 		return
 
+		AddQuote:
+			Delimiter := "','"
+			StringReplace, Clipboard, Clipboard, `r`n,%Delimiter%, UseErrorLevel
+			
+		return
+
 ; Meta: Greenshot
 ; -----------------------------------------------------------------------------
 
 ~^+c::
 	; Close Greenshot editor after copy
-	IfWinActive, ahk_class WindowsForms10.Window.8.app.0.34a3b57_r11_ad1
+	IfWinActive, Greenshot image editor
 	{
 		WinActivate
 		WinClose
@@ -334,20 +707,12 @@ DocTag := "???"
 ;WM_WINDOWPOSCHANGING = WM_WINDOWPOSCHANGING = 0x46
 DetectHiddenWindows, on
 SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-;ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
-ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
-ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
-;PostMessage, 0x01, 0x00210000, 0x00000000, %FocusedText%, ahk_class C/SIDE Application
-PostMessage, 0x01, 0x00210000, 0x00000000, MDIClient1, ahk_class C/SIDE Application
-;%FocusedClassNN%
-MsgBox Sending message to "%FocusedText%"
-;SendMessage, 0x115, 1, 0, %FocusedText%, ahk_class C/SIDE Application
-;SendMessage, 0x115, 1, 0, Object Designer, ahk_class C/SIDE Application
-;PostMessage, 0x46, Object Designer, HWND_TOP, 133, 19, 1501, 867 C/SIDE SubForm1, ahk_class C/SIDE Application
-;PostMessage, 0x01,0x0014e9e8,0x00e50000,0x0000ff01,
-
+IfWinActive, ahk_exe Microsoft.Dynamics.Nav.Client.exe
+	{
+		WinGet, active_id, ID, A
+		WinMove, ahk_id %active_id%,,,,800,600
+		return 
+	}
 return
 
 ^+0::
@@ -368,139 +733,110 @@ Loop, Parse, ActiveControlList, `n
 return
 
 ^+NumpadDiv::
-; Make BIG
 ;Example: ControlMove, , Pos x(l to r), Pos y (t to b), Size W, Size H, ahk_class C/SIDE Application
-SetTitleMatchMode, 2
 SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
-
-ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
-ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
-if (FocusedText = "Object Manager")
-	return
-ControlMove, %FocusedText%, DimX+10, DimY+50, DimW*.99, DimH-60, ahk_class C/SIDE Application
+IfWinActive, ahk_exe finsql.exe
+	{
+		WinGet, active_id, ID, A
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_id %active_id%
+		ControlGetFocus, FocusedClassNN, ahk_id %active_id%
+		ControlGetText, FocusedText, %FocusedClassNN%, ahk_id %active_id%
+		if (FocusedText = "Object Manager")
+			return
+		ControlMove, %FocusedText%, DimX+10, DimY+50, DimW*.99, DimH-60, ahk_id %active_id%
+		return
+	}
+IfWinActive, ahk_exe Microsoft.Dynamics.Nav.Client.exe
+	{
+		WinGet, active_id, ID, A
+		WinMaximize
+		return
+	}
 return
 
 
 ^+NumpadMult::
-SetTitleMatchMode, 2
+;Example: ControlMove, , Pos x(l to r), Pos y (t to b), Size W, Size H, ahk_class C/SIDE Application
 SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
-;ControlMove, _________, DimX+10, DimY+50, DimW-100, DimH-60, 
+IfWinActive, ahk_exe finsql.exe
+	{
+		WinGet, active_id, ID, A
+		ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_id %active_id%
+		ControlGetFocus, FocusedClassNN, ahk_id %active_id%
+		ControlGetText, FocusedText, %FocusedClassNN%, ahk_id %active_id%
+		if (FocusedText = "Object Manager")
+			return
+		;ControlMove, %FocusedText%, DimX+10, DimY+50, DimW*.99, DimH-60, ahk_id %active_id%
+		
+		;-------------Left-----------------------------
+		ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_id %active_id%
 
-;-------------Left-----------------------------
-ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+		;-------------Middle-----------------------------
+		ControlGetFocus, FocusedClassNN, ahk_id %active_id%
+		ControlGetText, FocusedText, %FocusedClassNN%, ahk_id %active_id%
+		ControlMove, %FocusedText%, DimX+10, DimY+10, DimW*.50, DimH-400, ahk_id %active_id%
 
-;-------------Middle-----------------------------
-ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
-ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
-ControlMove, %FocusedText%, DimX+10, DimY+10, DimW*.50, DimH-400, ahk_class C/SIDE Application
+		ControlMove, Table Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_id %active_id%
+		ControlMove, Form Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_id %active_id%
+		ControlMove, Section Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_id %active_id%
+		ControlMove, C/AL Globals, DimX+260, DimY+50, DimW*.85, DimH*.33, ahk_id %active_id%
+		ControlMove, C/AL Locals, DimX+260, DimY+50, DimW*.85, DimH*.33, ahk_id %active_id%
+		ControlMove, C/AL Editor, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_id %active_id%
+		;ControlMove, Object Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_id %active_id%
+		;ControlMove, Object Manager, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_id %active_id%
 
-ControlMove, Table Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-ControlMove, Form Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-ControlMove, Section Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-ControlMove, C/AL Globals, DimX+260, DimY+50, DimW*.85, DimH*.33, ahk_class C/SIDE Application
-ControlMove, C/AL Locals, DimX+260, DimY+50, DimW*.85, DimH*.33, ahk_class C/SIDE Application
-ControlMove, C/AL Editor, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-;ControlMove, Object Designer, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-;ControlMove, Object Manager, DimX+260, DimY+50, DimW*.85, DimH-60, ahk_class C/SIDE Application
-
+		return
+	}
+IfWinActive, ahk_exe Microsoft.Dynamics.Nav.Client.exe
+	{
+		WinGet, active_id, ID, A
+		WinMove, ahk_id %active_id%,,,,800,600
+		return
+	}
 return
 
 ^+NumpadSub::
-SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+	SetTitleMatchMode, 2
+	SetTitleMatchMode, Fast
+	WinActivate, ahk_class C/SIDE Application
+	ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
 
-;ControlMove, _________, DimX+10, DimY+50, DimW-100, DimH-60, 
-;-------------Left-----------------------------
-ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
-;-------------Middle-----------------------------
-ControlMove, Table Designer, DimX+260, DimY+50, 400, DimH-60, ahk_class C/SIDE Application
-ControlMove, Form Designer, DimX+260, DimY+50, DimW*.50, DimH-60, ahk_class C/SIDE Application
-ControlMove, Section Designer, DimX+260, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
-ControlMove, C/AL Globals, DimX+260, DimY+50, DimW*.50, DimH*.33, ahk_class C/SIDE Application
-ControlMove, C/AL Locals, DimX+260, DimY+50, DimW*.50, DimH*.33, ahk_class C/SIDE Application
+	;ControlMove, _________, DimX+10, DimY+50, DimW-100, DimH-60, 
+	;-------------Left-----------------------------
+	ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
+	;-------------Middle-----------------------------
+	ControlMove, Action Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+	ControlMove, Page Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+	ControlMove, Table Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+	ControlMove, Form Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+	ControlMove, Section Designer, DimX+300, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
+	ControlMove, C/AL Globals, DimX+260, DimY+50, DimW*.50, DimH*.33, ahk_class C/SIDE Application
+	ControlMove, C/AL Locals, DimX+260, DimY+50, DimW*.50, DimH*.33, ahk_class C/SIDE Application
 
-;-------------Right-----------------------------
-ControlMove, C/AL Editor, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-;ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-;ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
+	;-------------Right-----------------------------
+	ControlMove, C/AL Editor, DimX+1150, DimY+50, DimW*.40, DimH-60, ahk_class C/SIDE Application
+	;ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
+	;ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
 return
 
 ^+NumpadAdd::
-SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-;SetControlDelay, 2 
-SetKeyDelay, 2
-WinActivate, ahk_class C/SIDE Application
-ControlGetFocus, FocusedClassNN, A
-ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
-; Move down one line 
-;SendMessage, 0x115, 1, 0, %FocusedText%, ahk_class C/SIDE Application
-;ControlSend, %FocusedText%, Right, ahk_class C/SIDE Application
-;Ex#1+2 work: Send !{m} and Send !m 
-;Ex#3 does not work: Send {Alt}m
-Send !m
-;Send Right sends Right as text
-;Send {Right} sends Right Arrow
-Send {Right}
+	SetTitleMatchMode, 2
+	SetTitleMatchMode, Fast
+	;SetControlDelay, 2 
+	SetKeyDelay, 2
+	WinActivate, ahk_class C/SIDE Application
+	ControlGetFocus, FocusedClassNN, A
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+	; Move down one line 
+	;SendMessage, 0x115, 1, 0, %FocusedText%, ahk_class C/SIDE Application
+	;ControlSend, %FocusedText%, Right, ahk_class C/SIDE Application
+	;Ex#1+2 work: Send !{m} and Send !m 
+	;Ex#3 does not work: Send {Alt}m
+	Send !m
+	;Send Right sends Right as text
+	;Send {Right} sends Right Arrow
+	Send {Right}
 return
-
-^+5::
-;WM_NCCALCSIZE ??
-;WM_WINDOWPOSCHANGING = WM_WINDOWPOSCHANGING = 0x46
-DetectHiddenWindows, on
-SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-ControlGetFocus, FocusedClassNN, A
-ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
-MsgBox Posting message to "%FocusedClassNN%"
-; Move down one line 
-;SendMessage, 0x115, 1, 0, %FocusedText%, ahk_class C/SIDE Application
-;SendMessage, 0x115, 1, 0, Object Designer, ahk_class C/SIDE Application
-PostMessage, 0x46, %FocusedClassNN%, HWND_TOP, 133, 19, 1501, 867 C/SIDE SubForm1, ahk_class C/SIDE Application
-return
-
-^+6::
-;WM_NCCALCSIZE ??
-;WM_WINDOWPOSCHANGING = WM_WINDOWPOSCHANGING = 0x46
-DetectHiddenWindows, on
-SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-ControlGetFocus, FocusedClassNN, A
-ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
-MsgBox Sending message to "%FocusedText%"
-SendMessage, 0x115, 1, 0, %FocusedText%, ahk_class C/SIDE Application
-return
-
-^+7::
-;WM_NCCALCSIZE ??
-;WM_WINDOWPOSCHANGING = WM_WINDOWPOSCHANGING = 0x46
-DetectHiddenWindows, on
-SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-WinActivate, ahk_class C/SIDE Application
-ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
-
-;ControlMove, _________, DimX+10, DimY+50, DimW-100, DimH-60, 
-;-------------Left-----------------------------
-ControlMove, Properties, DimX+10, DimY+50, DimW*.15, DimH-60, ahk_class C/SIDE Application
-;-------------Middle-----------------------------
-ControlMove, Table Designer, DimX+260, DimY+50, 400, DimH-60, ahk_class C/SIDE Application
-ControlMove, Form Designer, DimX+260, DimY+50, DimW*.50, DimH-60, ahk_class C/SIDE Application
-ControlMove, Section Designer, DimX+260, DimY+50, 850, DimH-60, ahk_class C/SIDE Application
-;-------------Right-----------------------------
-ControlMove, C/AL Editor, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-;ControlMove, Object Designer, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-;ControlMove, Object Manager, DimX+1100, DimY+50, DimW*.33, DimH-60, ahk_class C/SIDE Application
-return
-
 	
 ; Unapply
 ^+u::
@@ -548,7 +884,7 @@ return
 	Send {Enter} ;Respond ok
 	return
 	
-; Reverse
+; Strip object of code
 ^+`::
 	WinActivate, ahk_class C/SIDE Application
 	ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
@@ -556,25 +892,40 @@ return
 	ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
 	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
 
-	Loop,28	
+	Loop,1	
 	{
-	;Unapply
+	;Select Designer
 	SetTitleMatchMode, 2
 	SetTitleMatchMode, Fast
-	;SetControlDelay, 2 
-	SetKeyDelay, 2
-	Sleep, 333y
-	;Send {Down}
+	SetKeyDelay, 100
+	;design
+	Send !{d}
+	;global variables
 	Send {Alt Down}
-	Send {u}
-	Send {u}
+	Send {v}	
+	Send {b}
 	Send {Alt Up}
-	Sleep, 333
-	Send !{u}
-	Sleep, 333
+
+	;select all
+	Send ^{a}
+	Send {delete}
 	Send {y}
-	Sleep, 333
-	Send {Enter}
+
+	;tab 2
+	Send ^{PgDn}
+	Send ^{a}
+	Send {delete}
+	Send {y}
+
+	;tab 3
+	Send ^{PgDn}
+	Send ^{a}
+	Send {delete}
+	Send {y}
+
+	;Escape
+	Send {Esc}
+
 	WinWait, ahk_class C/SIDE Application, , 1000
 	if ErrorLevel
 	{
@@ -584,33 +935,164 @@ return
 	else
 		Sleep, 100
 	
-	;Reverse
-	Send {Alt Down}
-	Send {u}	
+	;Delete Code
+	Send {F9}
+	Send ^{a}
+	Send {delete}
+	Send {y}
 	Sleep, 333
-	Send {r}
-	Send {Alt Up}
-	Sleep, 333
-	Send {F11}
-	WinWait, ahk_class C/SIDE Application, , 1000
-	if ErrorLevel
-	{
-		MsgBox, WinWait timed out.
-		return
-	}
-	else
-		Sleep, 100
-	Send {Left}
-	Sleep, 333
-	Send {Enter} ;Respond yes
-	Sleep, 333
-	Send {Enter} ;Respond ok
-	Sleep, 333
-	Send {Down}
-	Sleep, 333
+	;Escape
+	Send {Esc}
+	;Escape and save
+	Send {Esc}
+	Send {y}
+	;Send {down}
 	}
 	return
 
+^+f::
+	WinActivate, ahk_class C/SIDE Application
+	ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+
+	ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+	if (FocusedText = "Object Designer")
+		MsgBox Object Designer is in focus.
+	return
+	
+	; Delete Languages
+^+l::
+	;InputBox, UserInput, Directory, Please enter a Directory.,
+	FileDelete, C:\temp\Lang\*.flm
+	WinActivate, ahk_class C/SIDE Application
+	ControlGetPos, DimX, DimY, DimW, DimH, MDIClient1, ahk_class C/SIDE Application
+
+	ControlGetFocus, FocusedClassNN, ahk_class C/SIDE Application
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	;Select Designer
+	SetTitleMatchMode, 2
+	SetTitleMatchMode, Fast
+	SetKeyDelay, 2
+
+	;ENU
+	Send {Alt Down}
+	Send {t}
+	Send {g}	
+	Send {e}
+	Send {Alt Up}
+	WinWait, ,Language Module Export
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	Send C:\temp\Lang\DeleteLanguage_ENU.flm
+	Send {Down}
+	Send ENU
+	Send {Down}
+	Send {Space}
+	Send {Down}
+	Send {Enter}
+	Sleep, 333
+	;WinWait, ,Object Designer, 120
+	While WinExist("ahk_class C/SIDE Glued")
+	{
+		SplashTextOn, , , Processing.
+		Sleep, 300
+	}
+	SplashTextOff
+	If WinExist("ahk_class #32770") 
+		Send {y}
+	Sleep, 300
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+	
+	;ENC
+	Send {Alt Down}
+	Send {t}
+	Send {g}	
+	Send {e}
+	Send {Alt Up}
+	WinWait, ,Language Module Export
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	Send C:\temp\Lang\DeleteLanguage_ENC.flm
+	Send {Down}
+	Send ENC
+	Send {Down}
+	Send {Space}
+	Send {Down}
+	Send {Enter}
+	Sleep, 333
+	;WinWait, ,Object Designer, 120
+	While WinExist("ahk_class C/SIDE Glued")
+	{
+		SplashTextOn, , , Processing.
+		Sleep, 300
+	}
+	SplashTextOff
+	If WinExist("ahk_class #32770") 
+		Send {y}
+	Sleep, 300
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	;FRC
+	Send {Alt Down}
+	Send {t}
+	Send {g}	
+	Send {e}
+	Send {Alt Up}
+	WinWait, ,Language Module Export
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	Send C:\temp\Lang\DeleteLanguage_FRC.flm
+	Send {Down}
+	Send FRC
+	Send {Down}
+	Send {Space}
+	Send {Down}
+	Send {Enter}
+	Sleep, 333
+	;WinWait, ,Object Designer, 120
+	While WinExist("ahk_class C/SIDE Glued")
+	{
+		SplashTextOn, , , Processing.
+		Sleep, 300
+	}
+	SplashTextOff
+	If WinExist("ahk_class #32770") 
+		Send {y}
+	Sleep, 300
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+
+	;ESM
+	Send {Alt Down}
+	Send {t}
+	Send {g}	
+	Send {e}
+	Send {Alt Up}
+	WinWait, ,Language Module Export
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+
+	Send C:\temp\Lang\DeleteLanguage_ESM.flm
+	Send {Down}
+	Send ESM
+	Send {Down}
+	Send {Space}
+	Send {Down}
+	Send {Enter}
+	Sleep, 333
+	;WinWait, ,Object Designer, 120
+	While WinExist("ahk_class C/SIDE Glued")
+	{
+		SplashTextOn, , , Processing.
+		Sleep, 300
+	}
+	SplashTextOff
+	If WinExist("ahk_class #32770") 
+		Send {y}
+	Sleep, 300
+	ControlGetText, FocusedText, %FocusedClassNN%, ahk_class C/SIDE Application
+	return	
+	
 	; Insert <code></code> or surround selected text with it
 ; -----------------------------------------------------------------------------
 <^<+=::
@@ -642,7 +1124,7 @@ return
 	Run, "%Programs386%\Notepad++\notepad++.exe" %A_ScriptFullPath%, C:\Program Files (x86)\Notepad++
 	Return
  
-;<^<+j::
+<^<+j::
 	Run hh.exe "%A_WorkingDir%\AutoHotkey.chm"
 	WinWait, AutoHotkey_L Help
 	WinMaximize
@@ -659,18 +1141,19 @@ return
 		Sleep, 300
 		Reload
 	}
-	Else SendInput ^s
+	Else Send ^s
 	return
 	
 
 ; change "4.2.1" to "4.2.2"
 ; actually "4.2.1" to "4.2.1.0.0.0.1"
-~^m::
-	CurrentVersion := "4.2.1"
-CurrentVersionb := IncrementVersionNumber(CurrentVersion, 5)
-msgbox %CurrentVersion% changed to %CurrentVersionb%
-return
-IncrementVersionNumber(whatversionstring, incwhatpart){
+;~^m::
+;CurrentVersion := "4.2.1"
+;CurrentVersionb := IncrementVersionNumber(CurrentVersion, 5)
+;msgbox %CurrentVersion% changed to %CurrentVersionb%
+;return
+
+IncrementVersionNumber(whatversionstring, incwhatpart){
     ;stringsplit, vers, whatversionstring, .  ;<---- there is a period there
 	stringsplit, vers, whatversionstring,;<---- there is a period there
     if(vers0 < incwhatpart){
@@ -691,4 +1174,5 @@ return
     }
     return newversionstring
 }
-
+
+
